@@ -47,6 +47,17 @@ import random
 import pynput
 import os
 
+
+"""
+
+'gamedata' est une liste qui va contenir les différentes informations du jeu
+- Pseudo
+- Difficulté
+- Bouton sélectionné
+- Tubes
+...
+
+"""
 gamedata = []
 
 COLORS = ("blue", "red")
@@ -55,7 +66,11 @@ in_game = True
 
 winpatterns = []
 
+"""
 
+Ici, initialisation des paramètres de base.
+
+"""
 
 def startgame():
     for k in range(len(COLORS)):
@@ -74,6 +89,10 @@ def startgame():
         elif (lastaction[0] == "dump"):
             print(gamedata)
 
+
+"""
+Vérification simple de la victoire du joueur en fonction des patterns de victoire générés préalablement.
+"""
 def checkwin():
     nbOkay = 0
     for win_pattern in winpatterns:
@@ -84,6 +103,10 @@ def checkwin():
         print("Congratulations! You have won the game!")
         exit()
 
+
+"""
+Passage d'un tube à un autre
+"""
 def moveTube(dest):
     checkwin()
     tube = int(dest)
@@ -109,6 +132,9 @@ def moveTube(dest):
 
     print(targetColor)
 
+"""
+Sélection d'un tube
+"""
 
 def selectTube(tube):
     tube = int(tube)
@@ -127,6 +153,10 @@ def selectTube(tube):
         print("Error: Tube already selected")
 
 
+"""
+Génération aléatoire des tubes
+"""
+
 def generateGameStat(size):
     assert 0 < size <= 5, "Size must be between 1 and 5"
 
@@ -135,7 +165,7 @@ def generateGameStat(size):
             [], [], []
         ]
 
-        colorsToAdd = [["blue", 3], ["red", 3]]
+        colorsToAdd = [["blue", 3], ["red", 3]] # Système de répartition des couleurs, ici : 3 bleus et 3 rouges.
 
         k = 0
         while (colorsToAdd[0][1] != 0 or colorsToAdd[1][1] != 0):
@@ -145,7 +175,6 @@ def generateGameStat(size):
                     tlist[k].append(colorsToAdd[rand][0])
                     colorsToAdd[rand][1] -= 1
                 else:
-                    # Add other color
                     tlist[k].append(colorsToAdd[1 - rand][0])
                     colorsToAdd[1 - rand][1] -= 1
             k += 1
@@ -179,6 +208,12 @@ colors = {"red": "\033[31m", "blue": "\033[34m", "white": "\033[37m", "yellow": 
 
 from os import system
 
+"""
+
+Cette fonction permet de clear le terminal, de sorte à ce que les prints affichées ne défilent pas,
+mais donnent une impression de continuité et de fluiditié.
+
+"""
 
 def clearScreen():
     if os.name == "nt":
@@ -196,11 +231,19 @@ isInit = False
 debug = False
 username = ""
 
+"""
+
+Cette fonction permet d'afficher l'écran de démarrage. L'écran principal.
+Il contient trois boutons à savoir : Start (démarrer), Options (options), Quit (quitter)
+
+"""
 
 def drawMain():
+    # On supprime l'écran entier pour cette impression de nouvelle fenêtre.
     clearScreen()
     print("+---------------------------------------------------------+")
     print("|                                                         |")
+     # Si le bouton "Start" est sélectionné, on affiche le texte en souligné
     if (gamedata[6] == 0):
         print("|                     \033[4mStart\033[0m                               |")
     else:
@@ -221,6 +264,12 @@ def drawMain():
 
 ainput = False
 
+"""
+
+Cette fonction est très utile puisqu'elle nous permet d'afficher les écrans sans avoir à
+chercher à chaque fois laquelle afficher. L'écran est stocké dans le fameux 'gamedata'.
+
+"""
 def drawScreen():
     if (gamedata[5] == "main"):
         drawMain()
@@ -231,6 +280,7 @@ def drawScreen():
     elif (gamedata[5] == "options"):
         drawOptions()
 
+""" Fonction qui affiche l'écran de changement de pseudo """
 
 def drawUsernameChange():
     clearScreen()
@@ -239,11 +289,13 @@ def drawUsernameChange():
     gamedata[7] = input("> Veuillez choisir votre nouveau pseudo : ")
     gamedata[5] = "main"
 
+""" Fonction qui affiche les réglages du jeu """
 
 def drawOptions():
     clearScreen()
     print("+---------------------------------------------------------+")
     print("|                                                         |")
+    # À chaque fois, on viendra vérifier si le bouton est sélectionné ou non, et on affichera le texte souligné ou non en conséquence.
     if gamedata[0] == 0:
         if gamedata[6] == 0:
             print("| \033[4mDifficulté : " + green + "Facile\033[0m " + white + "                                    |")
@@ -277,13 +329,15 @@ def drawOptions():
     print("|                                                         |")
     print("+---------------------------------------------------------+")
 
+# Fonction qui renverse une liste
+
 def reverseList(list):
     newList = []
     for i in range(len(list) - 1, -1, -1):
         newList.append(list[i])
     return newList
 
-# python function who take a list and if the list size < 4, complete with ""
+# Fonction expliquée dans le préambule.
 def pad_list(lst):
     while len(lst) < 4:
         lst.append("")
@@ -318,6 +372,14 @@ def drawGame():
     print("| " + word + " " * (56 - len(word)) + " |")
     print(f"{white}+----------------------------------------------------------+\n")
 
+"""
+
+Fonction qui fonctionne grâce à un Listener. Elle vient permettre
+au jeu d'écouter les pressions de touches du clavier.
+
+C'est la pièce maîtresse du jeu, puisque c'est grâce à elle que le jeu peut être joué.
+
+"""
 def on_press(key):
     global word
     # print("Key pressed: " + str(key))
@@ -362,7 +424,17 @@ def on_press(key):
             
             # print('special key {0} pressed'.format(
             # key))
+        """
+    On va aussi regarder la pression des touches pour le menu 'options'
+    => Ils sont différents pour éviter de superposer des intéractions.
+    """
     if gamedata[5] == "options":
+                    """
+            
+            Les touches gauches et droites sont vérifiées afin de changer la difficulté du jeu,
+            uniquement lorsque l'on sélectionne le bouton 'difficulté'
+            
+            """
         if gamedata[6] == 0:
             clearScreen()
             drawScreen()
@@ -394,7 +466,9 @@ def on_press(key):
             if(gamedata[6] == 3):
                 gamedata[5] = "main"
                 drawScreen()
-
+    """
+    Même chose qu'au-dessus mais pour le menu principal et de façon déstructurée
+    """
     if (str(key) == "Key.up"):
         if (gamedata[5] == "main"):
             gamedata[6] -= 1
@@ -417,6 +491,10 @@ def on_press(key):
     # if ctrl + c 
 #    if (str(key) == "Key.ctrl_l"):      
 
+            # Selon le bouton sélectionné on va afficher un certain menu.
+            # gamedata[6] == 0 correspond à "Start"
+            # gamedata[6] == 1 correspond à "Options"
+            # gamedata[6] == 2 correspond à "Quit"
     if (str(key) == "Key.enter"):
         if (gamedata[5] == "main"):
             if (gamedata[6] == 0):
@@ -438,9 +516,28 @@ def on_press(key):
 
 
 
+"""
+
+Boucle infinie qui permet de faire tourner le jeu. :D
+Cette fois-ci elle est intentionnelle, et non pas une erreur de programmation.
+
+"""
 while True:
 
     if (not isInit):
+                """
+        Mise en place des différentes variables qui seront stockées dans 'gamedata'
+        
+        isInit
+        difficulty pour la difficulté
+        tubecolor pour la couleur des tubes
+        username pour le pseudo fonctionnant grâce à un input
+        
+        Le tout est rentré dans la liste 'gamedata'
+        
+        Enfin, on draw le screen pour afficher l'écran principal.
+        
+        """
         isInit = True
         difficulty = 0
         tubecolor = "blue"
