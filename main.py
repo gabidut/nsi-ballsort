@@ -368,9 +368,9 @@ def drawGame():
             line += "                     |"
 
     print(line)
-    print(f"{white}|    {colors[tubecolor]}+---+      +---+      +---+{white}                           |")
+    print(white, "|    {colors[tubecolor]}+---+      +---+      +---+",white,"                           |")
     print("| " + word + " " * (56 - len(word)) + " |")
-    print(f"{white}+----------------------------------------------------------+\n")
+    print(white,"+----------------------------------------------------------+\n")
 
 """
 
