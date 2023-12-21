@@ -101,6 +101,8 @@ def checkwin():
     if(nbOkay == 2):
         clearScreen()
         print("Congratulations! You have won the game!")
+        print("Exiting...")
+        raise SystemExit
         exit()
 
 
@@ -108,30 +110,32 @@ def checkwin():
 Passage d'un tube à un autre
 """
 def moveTube(dest):
-    checkwin()
     tube = int(dest)
-    if (tube < 0 or tube > 2):
+    if tube < 0 or tube > 2:
         print("Error: Tube must be between 0 and 2")
         return
-    if (gamedata[3] == ""):
+    if gamedata[3] == "":
         print("Error: Tube not selected")
         return
 
-    if (gamedata[3] == tube):
-        print("Error: Cannot move to same tube")
+    if gamedata[3] == tube:
+        print("Error: Cannot move to the same tube")
         return
-    print(gamedata[2][tube])
-    if (gamedata[2][tube][-1] != ""):
+    if gamedata[2][tube] and gamedata[2][tube][-1] != "":
         print("Error: Tube is full")
         return
-    targetColor = gamedata[2][gamedata[3]][len(gamedata[2][gamedata[3]]) - 1]
-    gamedata[2][gamedata[3]].pop(len(gamedata[2][gamedata[3]]) - 1)
-    gamedata[2][tube].append(targetColor)
 
-    #
-
-    print(targetColor)
-
+    targetColor = ""
+    for o in range(len(gamedata[2][gamedata[3]])):
+        if gamedata[2][gamedata[3]][o] != "":
+            targetColor = gamedata[2][gamedata[3]][o]
+            gamedata[2][gamedata[3]][o] = ""
+            break
+    for w in range(len(gamedata[2][tube])):
+        if gamedata[2][tube][w] == "":
+            gamedata[2][tube][w] = targetColor
+            break
+    checkwin()  
 """
 Sélection d'un tube
 """
@@ -339,8 +343,12 @@ def reverseList(list):
 
 # Fonction expliquée dans le préambule.
 def pad_list(lst):
+    
     while len(lst) < 4:
         lst.append("")
+
+    if(len(lst) > 4):
+        lst = lst[:4]
     return lst
 
 word = ""
@@ -353,6 +361,7 @@ def drawGame():
     for i in range(0,4):
         line += "|    "
         for k in range(3):
+            temp = []
             temp = pad_list(gamedata[2][k])
             temp = reverseList(temp)
 
@@ -406,20 +415,20 @@ def on_press(key):
                         print("Error: Tube must be a number")
                 if(tword[0] == "move"):
                     moveTube(tword[1])
-                    drawScreen()
+                    # drawScreen()
                     print("Moved to tube " + tword[1])
                 if(tword[0] == "dump"):
                     print(gamedata)
                     print(COLORS)
                 if(tword[0] == "exit"):
-                    gamedata[5] = "main"
-                    drawScreen()
+                    raise SystemExit
+                    exit()
 
                 if(tword[0] == "help"):
                     print("Commandes disponibles : ")
                     print("sel <tube> : Selectionne un tube")
                     print("move <tube> : Déplace le contenu du tube sélectionné vers le tube spécifié")
-                    print("dump : Affiche les données du jeu (attention, la solution est affichée dans les données du jeu !)")
+                    print("dump : Affiche les données du jeu (attention les yeux)")
                     print("exit : Quitte le jeu")
             
             # print('special key {0} pressed'.format(
@@ -429,12 +438,12 @@ def on_press(key):
     => Ils sont différents pour éviter de superposer des intéractions.
     """
     if gamedata[5] == "options":
-                    """
-            
-            Les touches gauches et droites sont vérifiées afin de changer la difficulté du jeu,
-            uniquement lorsque l'on sélectionne le bouton 'difficulté'
-            
-            """
+        """
+        
+        Les touches gauches et droites sont vérifiées afin de changer la difficulté du jeu,
+        uniquement lorsque l'on sélectionne le bouton 'difficulté'
+        
+        """
         if gamedata[6] == 0:
             clearScreen()
             drawScreen()
@@ -525,7 +534,7 @@ Cette fois-ci elle est intentionnelle, et non pas une erreur de programmation.
 while True:
 
     if (not isInit):
-                """
+        """
         Mise en place des différentes variables qui seront stockées dans 'gamedata'
         
         isInit
@@ -559,3 +568,18 @@ while True:
     if (current_milli_time % 100 == 0 and debug == False):
         drawScreen()
 
+    # for k in range(len(COLORS)):
+    #     winpatterns.append([COLORS[k],COLORS[k],COLORS[k]])
+    # while in_game:
+    #     lastaction = input("Action ?")
+    #     lastaction = lastaction.split(" ")
+    #     if (lastaction[0] == "sel"):
+    #         # if is as pasable number
+    #         if (lastaction[1].isdigit()):
+    #             selectTube(lastaction[1])
+    #         else:
+    #             print("Error: Tube must be a number")
+    #     elif (lastaction[0] == "move"):
+    #         moveTube(lastaction[1])
+    #     elif (lastaction[0] == "dump"):
+    #         print(gamedata)
